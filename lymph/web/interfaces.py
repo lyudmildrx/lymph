@@ -3,7 +3,7 @@ import sys
 
 from werkzeug.contrib.wrappers import DynamicCharsetRequestMixin
 from werkzeug.wrappers import Request as BaseRequest, Response
-from werkzeug.exceptions import HTTPException
+from werkzeug.exceptions import HTTPException, NotFound
 
 from lymph.core.interfaces import Interface
 from lymph.core import trace
@@ -91,6 +91,11 @@ class WebServiceInterface(Interface):
                 response = handler.dispatch(kwargs)
             else:
                 response = handler(request, **kwargs)
+        except NotFound as e:
+            raise
+        # vs
+        #except NotFound as e:
+        #    return [self.]not_found(request)
         except HTTPException as e:
             response = e.get_response(request.environ)
         except Exception as e:
