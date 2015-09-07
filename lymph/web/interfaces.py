@@ -94,26 +94,23 @@ class WebServiceInterface(Interface):
         except HTTPException as e:
             response = e.get_response(request.environ)
         except Exception as e:
-            if hasattr(e, 'to_http_response'):
-                response = e.to_http_response(request.environ)
-            else:
-                if not self.container.debug:
-                    logger.exception('uncaught exception')
-                exc_info = sys.exc_info()
-                extra_info = {
-                    'url': request.url,
-                    'trace_id': trace.get_id(),
-                    'interface': self.__class__.__name__,
-                }
-                try:
-                    self.container.error_hook(exc_info, extra=extra_info)
-                except:
-                    logger.exception('error hook failure')
-                finally:
-                    del exc_info
-                if self.container.debug:
-                    raise
-                response = Response('', status=500)
+            if not self.container.debug:
+                logger.exception('uncaught exception')
+            exc_info = sys.exc_info()
+            extra_info = {
+                'url': request.url,
+                'trace_id': trace.get_id(),
+                'interface': self.__class__.__name__,
+            }
+            try:
+                self.container.error_hook(exc_info, extra=extra_info)
+            except:
+                logger.exception('error hook failure')
+            finally:
+                del exc_info
+            if self.container.debug:
+                raise
+            response = Response('', status=500)
         response.headers['X-Trace-Id'] = trace.get_id()
         return response
 
